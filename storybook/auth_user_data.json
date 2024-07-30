@@ -1,0 +1,32 @@
+[
+    {
+      "model": "auth.User",
+      "pk": 23,
+      "fields": { "username": "Bikash", "password": "bikash123" }
+    },
+    {
+      "model": "auth.User",
+      "pk": 11,
+      "fields": { "username": "John Doe", "password": "jhonjhon" }
+    },
+    {
+      "model": "auth.User",
+      "pk": 45,
+      "fields": { "username": "Akash", "password": "akash123" }
+    },
+    {
+      "model": "auth.User",
+      "pk": 55,
+      "fields": { "username": "Nitin", "password": "nitin123" }
+    },
+    {
+      "model": "auth.User",
+      "pk": 15,
+      "fields": { "username": "Prakash", "password": "pk1234" }
+    },
+    {
+      "model": "auth.User",
+      "pk": 68,
+      "fields": { "username": "Priya", "password": "priyav1234" }
+    }
+  ]
