@@ -12,9 +12,10 @@ from rest_framework.response import Response
 
 from .models import *
 from .serializers import *
+from .chatgpt_service import generate_response
 
 
-@permission_classes((AllowAny))
+@permission_classes((AllowAny,))
 class Register(APIView):
     def post(self, request):
         username = request.data.get("name")
@@ -27,9 +28,9 @@ class Register(APIView):
                 "Error": "Name, Password and Email are required field"
             }, status = status.HTTP_400_BAD_REQUEST)
         
-        existing_user = UserProfile.objects().filter(email = email).first()
+        existing_user = UserProfile.objects.filter(email = email).first()
 
-        if not existing_user:
+        if existing_user:
             return Response({
                 "Error": "User already exist"
             }, status = status.HTTP_400_BAD_REQUEST)
@@ -50,28 +51,28 @@ class Register(APIView):
             "Message": "User created Successfully"
         }, status = status.HTTP_200_OK)
 
-@permission_classes((AllowAny))
+@permission_classes((AllowAny,))
 class Login(APIView):
     def post(self, request):
         if not request.data:
             return Response({
-                "Error": "Username and Password are required"
-            }, status = status.HTTP_400_BAD_REQUEST)
+                "Error": "username and password are required fields"
+            },status=status.HTTP_400_BAD_REQUEST)
         
         username = request.data.get("username")
         password = request.data.get("password")
 
         if not username or not password:
             return Response({
-                "Error": "Invalid username or password"
-            }, status = status.HTTP_404_NOT_FOUND)
+                "Error": "Invalid username or password",
+            }, status=status.HTTP_404_NOT_FOUND)
         
-        user = authenticate(username=username,password=password)
-        token,_ = Token.objects.get_or_create(user = user)
-
+        user = authenticate(username=username, password=password)
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "Token": token.key
-        }, status = status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK) 
+
     
 
 class UserStoriesView(APIView):
@@ -84,19 +85,39 @@ class UserStoriesView(APIView):
     
 
 class CreateStory(APIView):
+    def construct_prompt(self,text_pieces):
+        prompt = "Create a story of around 600 words using the following text pieces in the order they are mentioned:\n\n"
+        for i, piece in enumerate(text_pieces, 1):
+            prompt += f"{i}. {piece}\n"
+        prompt += (
+            "\nIncorporate these elements into a coherent and engaging narrative. Add details, descriptions, dialogues, and emotions to bring the story to life.\n"
+            "Also, provide a suitable title for the story."
+        )
+        return prompt
+    
     def post(self, request):
         user = request.user
+        story_data = request.data
+        print("user:",user)
+        print("story_data:",story_data)
+        prompt = self.construct_prompt(story_data)
+
+        response = generate_response(prompt)
+
+        title, content = response.split('\n', 1)
+        title = title.replace("Title:", "").strip()
+        content = content.strip()
 
         # Chatgpt intergration here
-        story = StoryContent.objects.get_or_create(
-            title='story title',
-            content='This is demo content'
+        story, created = StoryContent.objects.get_or_create(
+            title=title,
+            content=content
         )
         MatchUserStory.objects.get_or_create(user=user, story=story)
 
         return Response({
             "Message": "Story created successfully",
-            "story": StoryContentSerializer(story)
+            "story": StoryContentSerializer(story).data
         }, status=status.HTTP_200_OK)
 
 
