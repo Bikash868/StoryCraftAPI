@@ -23,5 +23,5 @@ class MatchUserStory(models.Model):
     story = models.ForeignKey(StoryContent, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return str(self.user)+' '+str(self.story)
+        return 'sdfsdfs'
 

@@ -4,4 +4,4 @@ from .models import StoryContent
 class StoryContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoryContent
-        feilds = ['title', 'content']
+        fields = ['title', 'content']
